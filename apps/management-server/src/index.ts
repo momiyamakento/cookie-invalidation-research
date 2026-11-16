@@ -28,6 +28,7 @@ const app = createManagementApp(context.mappingService, {
   authenticator: new SiteTokenAuthenticator(config.siteTokens, config.benchmarkSharedSecret),
   detectionService: context.detectionService,
   invalidationOrchestrator,
+  securityAuditRepository: context.securityAuditRepository,
 });
 
 const server = app.listen(config.port, () => {

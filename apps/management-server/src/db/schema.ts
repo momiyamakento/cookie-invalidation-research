@@ -61,4 +61,23 @@ export const MANAGEMENT_SCHEMA = `
 
   CREATE INDEX IF NOT EXISTS idx_invalidation_jobs_event
     ON invalidation_jobs(event_id, target_service_id);
+
+  CREATE TABLE IF NOT EXISTS security_audit_events (
+    id TEXT PRIMARY KEY,
+    occurred_at TEXT NOT NULL,
+    action TEXT NOT NULL CHECK (action IN (
+      'MAPPING_REGISTER', 'MAPPING_RESOLVE', 'MAPPING_READ',
+      'DETECTION_CREATE', 'DETECTION_READ'
+    )),
+    authenticated_service_id TEXT,
+    claimed_service_id TEXT,
+    outcome TEXT NOT NULL CHECK (outcome IN ('ALLOWED', 'DENIED')),
+    http_status INTEGER NOT NULL CHECK (http_status >= 100 AND http_status <= 599)
+  ) STRICT;
+
+  CREATE INDEX IF NOT EXISTS idx_security_audit_time
+    ON security_audit_events(occurred_at);
+
+  CREATE INDEX IF NOT EXISTS idx_security_audit_outcome
+    ON security_audit_events(outcome, action);
 `;

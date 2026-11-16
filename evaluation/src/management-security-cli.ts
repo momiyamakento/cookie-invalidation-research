@@ -24,6 +24,7 @@ export interface SecurityCaseResult {
 export interface ManagementSecurityResult {
   generatedAt: string;
   cases: SecurityCaseResult[];
+  audit: { total: number; allowed: number; denied: number };
   passed: boolean;
 }
 
@@ -64,6 +65,8 @@ ${rows}
 
 全ケースが想定結果と一致：${result.passed ? "はい" : "いいえ"}
 
+監査ログ：全${result.audit.total}件（許可${result.audit.allowed}件、拒否${result.audit.denied}件）
+
 ## 結論
 
 未認証要求とサービス間の権限越境は401/403で阻止され、拒否時に対応表・検知イベントは変更されない。一方、正しいサービス資格情報が窃取された場合、管理サーバーは攻撃要求を正規の検知通知と区別できない。この残存リスクには、資格情報の短期化・ローテーション、要求レート制限、監査ログと異常検知、必要に応じた追加証明方式の評価が必要である。
@@ -79,6 +82,7 @@ export async function runManagementSecurityEvaluation(
   const app = createManagementApp(context.mappingService, {
     authenticator: new SiteTokenAuthenticator(TOKENS),
     detectionService: context.detectionService,
+    securityAuditRepository: context.securityAuditRepository,
   });
   const server = app.listen(0, "127.0.0.1");
   await new Promise<void>((done, fail) => {
@@ -88,6 +92,7 @@ export async function runManagementSecurityEvaluation(
   const address = server.address() as AddressInfo;
   const baseUrl = `http://127.0.0.1:${address.port}`;
   const cases: SecurityCaseResult[] = [];
+  let audit: ManagementSecurityResult["audit"];
   const count = (table: "user_service_mappings" | "detection_events"): number =>
     context.database.prepare<[], { count: number }>(`SELECT COUNT(*) AS count FROM ${table}`).get()?.count ?? 0;
   const request = async (
@@ -155,12 +160,23 @@ export async function runManagementSecurityEvaluation(
       table: "detection_events", path: "/api/v1/detections",
       init: json(detection("site-a", "security-user-a"), `Bearer ${TOKENS["site-a"]}`), expectedMutation: true,
       interpretation: "正規通知と区別できない残存リスク" });
+    const auditRecords = context.securityAuditRepository.findAll();
+    audit = {
+      total: auditRecords.length,
+      allowed: auditRecords.filter((item) => item.outcome === "ALLOWED").length,
+      denied: auditRecords.filter((item) => item.outcome === "DENIED").length,
+    };
   } finally {
     await new Promise<void>((done, fail) => server.close((error) => error === undefined ? done() : fail(error)));
     context.database.close();
   }
 
-  const result: ManagementSecurityResult = { generatedAt: new Date().toISOString(), cases, passed: cases.length === 9 };
+  const result: ManagementSecurityResult = {
+    generatedAt: new Date().toISOString(),
+    cases,
+    audit,
+    passed: cases.length === 9 && audit.total === 9 && audit.allowed === 3 && audit.denied === 6,
+  };
   const headers = ["id", "threat", "credential", "expected_status", "actual_status", "state_before", "state_after", "outcome", "interpretation"];
   const csvRows = cases.map((item) => [item.id, item.threat, item.credential, item.expectedStatus, item.actualStatus,
     item.stateBefore, item.stateAfter, item.outcome, item.interpretation].map(csv).join(","));
