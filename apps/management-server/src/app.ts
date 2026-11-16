@@ -8,6 +8,7 @@ import { createDetectionsRouter } from "./routes/detections.js";
 import { createEvaluationMetricsRouter } from "./routes/evaluation-metrics.js";
 import type { SiteTokenAuthenticator } from "./internal-auth.js";
 import type { SecurityAuditRepository } from "./db/repositories/security-audit-repository.js";
+import type { DetectionRateLimiter } from "./detection-rate-limiter.js";
 import { createSecurityAuditMiddleware } from "./security-audit-middleware.js";
 import type { DetectionService } from "./services/detection-service.js";
 import type { InvalidationOrchestrator } from "./services/invalidation-orchestrator.js";
@@ -18,6 +19,7 @@ export interface ManagementApiDependencies {
   detectionService?: DetectionService;
   invalidationOrchestrator?: InvalidationOrchestrator;
   securityAuditRepository?: SecurityAuditRepository;
+  detectionRateLimiter?: DetectionRateLimiter;
 }
 
 export function createManagementApp(
@@ -46,6 +48,7 @@ export function createManagementApp(
         managementApi.detectionService,
         managementApi.authenticator,
         managementApi.invalidationOrchestrator,
+        managementApi.detectionRateLimiter,
       ),
     );
   }

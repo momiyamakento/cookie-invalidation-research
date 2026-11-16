@@ -6,6 +6,7 @@ import { resolve } from "node:path";
 import { createManagementApp } from "../../apps/management-server/src/app.js";
 import { SiteTokenAuthenticator } from "../../apps/management-server/src/internal-auth.js";
 import { initializeManagementContext } from "../../apps/management-server/src/management-context.js";
+import { DetectionRateLimiter } from "../../apps/management-server/src/detection-rate-limiter.js";
 
 type Outcome = "BLOCKED" | "ALLOWED";
 
@@ -69,7 +70,7 @@ ${rows}
 
 ## 結論
 
-未認証要求とサービス間の権限越境は401/403で阻止され、拒否時に対応表・検知イベントは変更されない。一方、正しいサービス資格情報が窃取された場合、管理サーバーは攻撃要求を正規の検知通知と区別できない。この残存リスクには、資格情報の短期化・ローテーション、要求レート制限、監査ログと異常検知、必要に応じた追加証明方式の評価が必要である。
+未認証要求とサービス間の権限越境は401/403で阻止され、拒否時に対応表・検知イベントは変更されない。正しいサービス資格情報による単発の偽通知は受理されるが、時間窓内の新規イベント上限を超えた通知は429で拒否された。レート制限は単発攻撃を防がず、正規通知の集中も制限し得るため、上限値の比較評価が必要である。
 `;
 }
 
@@ -83,6 +84,7 @@ export async function runManagementSecurityEvaluation(
     authenticator: new SiteTokenAuthenticator(TOKENS),
     detectionService: context.detectionService,
     securityAuditRepository: context.securityAuditRepository,
+    detectionRateLimiter: new DetectionRateLimiter(2, 60_000),
   });
   const server = app.listen(0, "127.0.0.1");
   await new Promise<void>((done, fail) => {
@@ -160,6 +162,10 @@ export async function runManagementSecurityEvaluation(
       table: "detection_events", path: "/api/v1/detections",
       init: json(detection("site-a", "security-user-a"), `Bearer ${TOKENS["site-a"]}`), expectedMutation: true,
       interpretation: "正規通知と区別できない残存リスク" });
+    await request({ id: "R2", threat: "窃取資格情報で上限超過の偽通知", credential: "窃取Site A", expectedStatus: 429,
+      table: "detection_events", path: "/api/v1/detections",
+      init: json(detection("site-a", "security-user-a"), `Bearer ${TOKENS["site-a"]}`), expectedMutation: false,
+      interpretation: "時間窓内の新規イベント上限で被害拡大を制限" });
     const auditRecords = context.securityAuditRepository.findAll();
     audit = {
       total: auditRecords.length,
@@ -175,7 +181,7 @@ export async function runManagementSecurityEvaluation(
     generatedAt: new Date().toISOString(),
     cases,
     audit,
-    passed: cases.length === 9 && audit.total === 9 && audit.allowed === 3 && audit.denied === 6,
+    passed: cases.length === 10 && audit.total === 10 && audit.allowed === 3 && audit.denied === 7,
   };
   const headers = ["id", "threat", "credential", "expected_status", "actual_status", "state_before", "state_after", "outcome", "interpretation"];
   const csvRows = cases.map((item) => [item.id, item.threat, item.credential, item.expectedStatus, item.actualStatus,

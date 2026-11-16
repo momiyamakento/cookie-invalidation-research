@@ -16,10 +16,10 @@ describe("management API security evaluation", () => {
     const result = await runManagementSecurityEvaluation(directory);
 
     expect(result.passed).toBe(true);
-    expect(result.cases).toHaveLength(9);
-    expect(result.audit).toEqual({ total: 9, allowed: 3, denied: 6 });
+    expect(result.cases).toHaveLength(10);
+    expect(result.audit).toEqual({ total: 10, allowed: 3, denied: 7 });
     expect(result.cases.filter((item) => item.outcome === "BLOCKED").map((item) => item.id)).toEqual([
-      "M1", "M2", "M3", "M5", "D1", "D2",
+      "M1", "M2", "M3", "M5", "D1", "D2", "R2",
     ]);
     expect(result.cases.find((item) => item.id === "R1")).toMatchObject({
       actualStatus: 201,
@@ -27,8 +27,14 @@ describe("management API security evaluation", () => {
       stateBefore: 1,
       stateAfter: 2,
     });
+    expect(result.cases.find((item) => item.id === "R2")).toMatchObject({
+      actualStatus: 429,
+      outcome: "BLOCKED",
+      stateBefore: 2,
+      stateAfter: 2,
+    });
     expect(readFileSync(join(directory, "report.md"), "utf8")).toContain("正規通知と区別できない残存リスク");
-    expect(readFileSync(join(directory, "report.md"), "utf8")).toContain("監査ログ：全9件（許可3件、拒否6件）");
+    expect(readFileSync(join(directory, "report.md"), "utf8")).toContain("監査ログ：全10件（許可3件、拒否7件）");
     expect(readFileSync(join(directory, "summary.csv"), "utf8")).not.toContain(TOKENS_FORBIDDEN_PATTERN);
   });
 });

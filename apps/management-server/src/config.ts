@@ -14,6 +14,8 @@ export interface ManagementConfig {
   port: number;
   siteTokens: SiteTokens;
   invalidationStrategy: InvalidationStrategy;
+  detectionRateLimitMaxEvents: number;
+  detectionRateLimitWindowMs: number;
 }
 
 function requireToken(name: string, value: string | undefined): string {
@@ -21,6 +23,14 @@ function requireToken(name: string, value: string | undefined): string {
     throw new Error(`${name} is required.`);
   }
   return value;
+}
+
+function positiveInteger(name: string, value: string | undefined, fallback: number): number {
+  if (value === undefined || value.trim() === "") return fallback;
+  if (!/^\d+$/u.test(value) || !Number.isSafeInteger(Number(value)) || Number(value) < 1) {
+    throw new Error(`${name} must be a positive integer.`);
+  }
+  return Number(value);
 }
 
 export function loadManagementConfig(
@@ -96,5 +106,15 @@ export function loadManagementConfig(
     ),
     siteTokens,
     invalidationStrategy: strategy,
+    detectionRateLimitMaxEvents: positiveInteger(
+      "DETECTION_RATE_LIMIT_MAX_EVENTS",
+      environment.DETECTION_RATE_LIMIT_MAX_EVENTS,
+      10,
+    ),
+    detectionRateLimitWindowMs: positiveInteger(
+      "DETECTION_RATE_LIMIT_WINDOW_MS",
+      environment.DETECTION_RATE_LIMIT_WINDOW_MS,
+      60_000,
+    ),
   };
 }

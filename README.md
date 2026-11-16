@@ -137,6 +137,8 @@ Management DBに保存するのは`principalId`、`serviceId`、`localUserId`、
 
 mapping APIはサービス別の`SITE_X_TO_MANAGER_TOKEN`によるBearer認証を必須とします。さらに、認証されたサービスIDと要求中の`serviceId`が一致しない登録・逆引きを403で拒否し、principalIdによる参照でも呼出元サービス自身の対応だけを返します。認証情報がない、または不正な要求は401です。これはネットワーク経由の未認証操作とサービス間の権限越境を防ぐ対策であり、Management Serverホスト自体を奪取された場合まで防ぐものではありません。
 
+検知通知にはサービス単位のrolling-windowレート制限も適用します。既定値は新規eventIdを60秒あたり10件です。同一eventIdの冪等な再送は追加枠を消費しません。上限超過は`429 DETECTION_RATE_LIMITED`と`Retry-After`を返します。この制限はプロセスメモリ上にあり、単一管理プロセスでの被害拡大制限を目的とします。単発の偽通知、管理ホスト侵害、再起動や複数管理プロセスをまたぐ攻撃を防ぐものではありません。
+
 ## Phase 6の起動時mapping登録
 
 各Siteは自分のDB初期化と実験利用者seedを完了し、HTTPサーバーがlistenを開始した後に、`POST /api/v1/mappings`へ次の3項目だけを送ります。

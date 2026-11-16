@@ -8,6 +8,7 @@ import { initializeManagementContext } from "./management-context.js";
 import { SiteTokenAuthenticator } from "./internal-auth.js";
 import { createSiteRevocationClient } from "./site-revocation-client.js";
 import { InvalidationOrchestrator } from "./services/invalidation-orchestrator.js";
+import { DetectionRateLimiter } from "./detection-rate-limiter.js";
 
 dotenv.config({ path: new URL("../../../.env", import.meta.url), quiet: true });
 
@@ -29,6 +30,10 @@ const app = createManagementApp(context.mappingService, {
   detectionService: context.detectionService,
   invalidationOrchestrator,
   securityAuditRepository: context.securityAuditRepository,
+  detectionRateLimiter: new DetectionRateLimiter(
+    config.detectionRateLimitMaxEvents,
+    config.detectionRateLimitWindowMs,
+  ),
 });
 
 const server = app.listen(config.port, () => {

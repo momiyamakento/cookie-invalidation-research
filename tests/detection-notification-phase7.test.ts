@@ -438,8 +438,8 @@ describe("Phase 7 authenticated detection notification", () => {
     expect(result).toMatchObject({ ok: true, attempts: 2 });
   });
 
-  for (const status of [401, 403, 404, 409] as const) {
-    const testNumber = { 401: 34, 403: 35, 404: 36, 409: 37 }[status];
+  for (const status of [401, 403, 404, 409, 429] as const) {
+    const testNumber = { 401: 34, 403: 35, 404: 36, 409: 37, 429: "37b" }[status];
     it(`Test ${testNumber}: HTTP ${status} does not retry`, async () => {
       const fetchImplementation = vi.fn<typeof fetch>(() =>
         Promise.resolve(jsonResponse(status, { error: "REJECTED" })),

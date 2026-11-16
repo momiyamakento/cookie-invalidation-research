@@ -5,6 +5,7 @@ import { isManagedServiceId } from "@cookie-research/protocol";
 import { Router, type Request } from "express";
 
 import type { SiteTokenAuthenticator } from "../internal-auth.js";
+import type { DetectionRateLimiter } from "../detection-rate-limiter.js";
 import type { DetectionService } from "../services/detection-service.js";
 import type { InvalidationOrchestrator } from "../services/invalidation-orchestrator.js";
 
@@ -95,6 +96,7 @@ export function createDetectionsRouter(
   detectionService: DetectionService,
   authenticator: SiteTokenAuthenticator,
   invalidationOrchestrator?: InvalidationOrchestrator,
+  rateLimiter?: DetectionRateLimiter,
 ): Router {
   const router = Router();
 
@@ -121,11 +123,19 @@ export function createDetectionsRouter(
       return;
     }
 
+    const rateLimit = rateLimiter?.check(notification.serviceId, notification.eventId);
+    if (rateLimit !== undefined && !rateLimit.allowed) {
+      response.set("Retry-After", String(rateLimit.retryAfterSeconds));
+      response.status(429).json({ error: "DETECTION_RATE_LIMITED" });
+      return;
+    }
+
     const result = detectionService.resolve(notification);
     if (result.kind === "event_id_conflict") {
       response.status(409).json({ error: "EVENT_ID_CONFLICT" });
       return;
     }
+    if (result.kind === "received") rateLimiter?.record(notification.serviceId, notification.eventId);
     if (result.kind === "user_mapping_not_found") {
       response.status(404).json({ error: "USER_MAPPING_NOT_FOUND" });
       return;
