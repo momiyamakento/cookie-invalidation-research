@@ -1,0 +1,63 @@
+{
+  "name": "cookie-invalidation-research",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Research prototype for coordinated server-side session invalidation after decoy cookie detection.",
+  "engines": {
+    "node": ">=22"
+  },
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "typecheck": "tsc --noEmit -p tsconfig.json && npm run typecheck --workspaces --if-present",
+    "lint": "eslint .",
+    "test": "vitest run --passWithNoTests --pool=threads",
+    "evaluate": "tsx evaluation/src/cli.ts",
+    "evaluate:benchmark": "tsx evaluation/src/benchmark-scale-cli.ts",
+    "evaluate:full": "tsx evaluation/src/full-cli.ts",
+    "evaluate:zero-delay": "tsx evaluation/src/zero-delay-cli.ts",
+    "evaluate:compare": "tsx evaluation/src/comparative-cli.ts",
+    "evaluate:protection": "tsx evaluation/src/protection-cli.ts",
+    "evaluate:concurrent": "tsx evaluation/src/concurrent-cli.ts",
+    "evaluate:coordination": "tsx evaluation/src/coordination-cli.ts",
+    "start:management": "npm run start --workspace @cookie-research/management-server",
+    "start:site-a": "npm run start --workspace @cookie-research/site-a",
+    "start:site-b": "npm run start --workspace @cookie-research/site-b",
+    "start:site-c": "npm run start --workspace @cookie-research/site-c",
+    "start:site-d": "npm run start --workspace @cookie-research/site-d",
+    "start:all": "concurrently -k -n management,site-a,site-b,site-c,site-d \"npm:start:management\" \"npm:start:site-a\" \"npm:start:site-b\" \"npm:start:site-c\" \"npm:start:site-d\"",
+    "dev:management": "npm run dev --workspace @cookie-research/management-server",
+    "dev:site-a": "npm run dev --workspace @cookie-research/site-a",
+    "dev:site-b": "npm run dev --workspace @cookie-research/site-b",
+    "dev:site-c": "npm run dev --workspace @cookie-research/site-c",
+    "dev:site-d": "npm run dev --workspace @cookie-research/site-d",
+    "dev:all": "concurrently -k -n management,site-a,site-b,site-c,site-d \"npm:dev:management\" \"npm:dev:site-a\" \"npm:dev:site-b\" \"npm:dev:site-c\" \"npm:dev:site-d\"",
+    "start:demo": "npm run start --workspace @cookie-research/demo",
+    "start:demo:all": "concurrently -k -n research,demo \"npm:start:all\" \"npm:start:demo\"",
+    "demo": "npm run start:demo:all"
+  },
+  "dependencies": {
+    "better-sqlite3": "^12.2.0",
+    "cookie": "^1.0.2",
+    "dotenv": "^17.2.1",
+    "ejs": "^3.1.10",
+    "express": "^5.1.0"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.0",
+    "@types/better-sqlite3": "^7.6.13",
+    "@types/ejs": "^3.1.5",
+    "@types/express": "^5.0.3",
+    "@types/node": "^24.3.0",
+    "@types/supertest": "^6.0.3",
+    "concurrently": "^9.2.1",
+    "eslint": "^10.0.0",
+    "tsx": "^4.20.5",
+    "supertest": "^7.1.4",
+    "typescript": "^5.9.2",
+    "typescript-eslint": "^8.40.0",
+    "vitest": "^3.2.4"
+  }
+}

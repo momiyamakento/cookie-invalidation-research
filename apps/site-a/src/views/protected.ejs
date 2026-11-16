@@ -1,0 +1,19 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Site A Protected</title>
+  </head>
+  <body>
+    <main>
+      <h1>Site A</h1>
+      <p>Logged in as <%= session.username %></p>
+      <p>local user id: <%= session.userId %></p>
+      <p>session status: <%= session.status %></p>
+      <form method="post" action="/logout">
+        <button type="submit">Log out</button>
+      </form>
+    </main>
+  </body>
+</html>

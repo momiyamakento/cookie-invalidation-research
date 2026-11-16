@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="demo-token" content="<%= csrfToken %>">
+<title>性能評価 | Cookie Theft Protection Demo</title>
+<link rel="stylesheet" href="/demo/assets/demo.css"><link rel="stylesheet" href="/demo/assets/evaluation.css">
+<script src="/demo/assets/evaluation.js" defer></script>
+</head>
+<body><main class="dashboard evaluation">
+<nav class="mode-switch" aria-label="表示モード"><a href="/demo">システムデモ</a><a href="/demo/evaluation" aria-current="page">性能評価</a></nav>
+<header class="header"><div><p class="eyebrow">SECURITY RESEARCH / BENCHMARK</p><h1>失効処理の性能評価</h1><p class="subtitle">実処理負荷と待機時間を分けて、一括失効への影響を確認</p></div><span id="evaluation-status" class="badge neutral" role="status">待機中</span></header>
+<section class="eval-panel" aria-labelledby="condition-title"><h2 id="condition-title">01 <span>評価条件</span></h2>
+<form id="evaluation-form"><fieldset id="condition-fields"><legend class="sr-only">評価条件の指定</legend><div class="condition-grid">
+<label>サービス数<select name="serviceCount" id="service-count"><% [1,5,10,20,50,100].forEach(n => { %><option value="<%= n %>"><%= n %> services</option><% }) %></select></label>
+<label>Processing Load<select name="loadProfile" id="load-profile"><option value="light">LIGHT</option><option value="medium">MEDIUM</option><option value="heavy">HEAVY</option></select></label>
+<label>Service Delay<select name="serviceDelayMs" id="service-delay"><option value="0">0 ms</option><option value="20">20 ms</option><option value="100">100 ms</option></select></label>
+<label>Warm-up回数<input name="warmup" id="warmup" type="number" value="2" min="0" max="20" step="1" required></label>
+<label>測定試行回数<input name="trials" id="trials" type="number" value="10" min="1" max="100" step="1" required></label>
+</div><div class="eval-action"><button class="button primary" id="start-evaluation" type="submit">評価を開始</button><p>専用のManagementとbenchmarkを自動起動します。<br>学校デモ用の4サイトとは独立して実行します。</p></div></fieldset></form>
+<p id="run-message" role="status">条件を選択して評価を開始してください。</p><div id="evaluation-error" class="error" role="alert" hidden></div>
+</section>
+<section id="evaluation-result" hidden aria-labelledby="result-heading"><div class="result-heading"><h2 id="result-heading">02 評価結果</h2><p id="result-condition"></p></div>
+<div class="eval-cards">
+<article class="eval-card"><p>実処理時間</p><strong id="actual-value">—</strong><small>actualProcessingMs · サービス内平均</small></article>
+<article class="eval-card wait-card"><p>待機時間</p><strong id="delay-value">—</strong><small>measuredDelayMs · サービス内平均</small></article>
+<article class="eval-card overall-card"><p>全体失効時間</p><strong id="overall-value">—</strong><small>検知POST開始 → Management応答受信</small></article>
+</div><p class="eval-note">サービス内合計 = 実処理 ＋ 実測待機。全体失効時間とは計測範囲が異なり、単純に差し引けません。warm-upは統計から除外します。</p>
+<div class="eval-panel"><p id="success-count" class="success-text"></p><div class="table-scroll"><table><caption>時間の統計（ms）</caption><thead><tr><th>計測項目</th><th>平均</th><th>中央値</th><th>最小</th><th>最大</th><th>標準偏差（母）</th></tr></thead><tbody id="statistics"></tbody></table></div><p class="eval-note">サービス内統計は全サービス × 測定試行の分布です。成功・失敗数は測定試行の合計です。</p><div class="download-buttons"><button class="button secondary" data-file="raw.csv">CSVを保存（試行結果）</button><button class="button secondary" data-file="service-timings.csv">CSVを保存（サービス内時間）</button><button class="button secondary" data-file="summary.json">summaryを保存</button></div></div>
+</section>
+<section class="eval-panel" aria-labelledby="history-heading"><h2 id="history-heading">03 <span>評価履歴・比較</span></h2><p class="eval-note">同じ負荷・遅延・warm-up・測定回数・モデルの結果を、サービス数ごとに比較します。同じサービス数では最新の結果を使用します。</p><p id="chart-label">評価完了後に比較を表示します。</p><svg id="comparison-chart" viewBox="0 0 850 260" role="img" aria-label="サービス数と全体失効時間の比較" hidden></svg><p id="chart-empty">1件の場合は点を表示します。条件の異なる結果は混ぜません。</p><div id="history" class="history-list"></div><p class="eval-note">画面の履歴はサーバー起動中の最新30件。CSVとsummaryはevaluation/resultsに残ります。評価実行中は別タブからも二重実行できません。</p></section>
+<footer><span>LOCAL BENCHMARK · Processing Load / Service Delay</span><span>共有イベントループ・メモリSQLiteによる合成評価</span></footer>
+</main></body></html>

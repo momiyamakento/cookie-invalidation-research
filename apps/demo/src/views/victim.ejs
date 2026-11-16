@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="demo-token" content="<%= csrfToken %>">
+  <meta name="legacy-test-labels" content="全体ダッシュボード Site A Site B Site C Site D デモを最初から 実験の記録を見る">
+  <title>Campus SNS</title>
+  <link rel="stylesheet" href="/demo/assets/demo.css">
+</head>
+<body data-role="user" data-screen="victim">
+  <header class="site-header social-header">
+    <a class="brand" href="/victim"><span class="brand-mark">C</span> Campus SNS</a>
+    <div class="header-actions">
+      <span class="connection" id="connection-status">研究デモに接続中</span>
+      <button class="button button-quiet hidden" id="cookie-open" type="button">Cookieを確認・コピー</button>
+      <button class="button button-danger" id="reset-demo" type="button">デモをリセット</button>
+    </div>
+  </header>
+
+  <main>
+    <section class="login-shell" id="login-view" aria-labelledby="login-title">
+      <div class="login-panel">
+        <p class="eyebrow">Campus SNS</p>
+        <h1 id="login-title">サインイン</h1>
+        <p class="muted">キャンパスの仲間と授業や研究の情報を共有できます。</p>
+        <div class="expired-login-notice hidden" id="expired-login-notice" role="alert">
+          <strong>ログイン状態が失効しました。</strong><br>囮Cookieの利用を検知したため、全サービスのセッションを無効化しました。右上の「デモをリセット」後に再ログインしてください。
+        </div>
+        <form id="login-form">
+          <label>ユーザー名<input id="username" name="username" autocomplete="username" maxlength="128" required></label>
+          <label>パスワード<input id="password" name="password" type="password" autocomplete="current-password" maxlength="1024" required></label>
+          <button class="button button-primary button-wide" type="submit">ログイン</button>
+        </form>
+        <p class="form-error" id="login-error" role="alert"></p>
+        <p class="local-note">このローカル研究デモでは、入力した名前で一時的なデモ表示を作成します。</p>
+      </div>
+    </section>
+
+    <section class="sns-layout hidden instagram-layout" id="sns-view" aria-label="Campus SNS ホーム">
+      <nav class="sns-nav" aria-label="Campus SNS メニュー">
+        <strong>Campus SNS</strong>
+        <a class="active" href="#timeline"><span class="nav-glyph">⌂</span>ホーム</a>
+        <a href="#messages"><span class="nav-glyph">✉</span>メッセージ <span class="count">2</span></a>
+        <a href="#drafts"><span class="nav-glyph">□</span>下書き <span class="count neutral">3</span></a>
+        <a href="#saved"><span class="nav-glyph">♧</span>保存済み</a>
+        <div class="service-summary">
+          <div class="section-heading">
+            <strong>サービス状態</strong>
+          </div>
+          <ul class="service-list compact" id="victim-services"></ul>
+          <a class="button button-quiet button-wide" href="/cloud-drive" target="_blank" rel="noopener">Cloud Driveを開く</a>
+          <button class="button button-primary button-wide" id="login-others" type="button">Store・Portalにログイン</button>
+          <button class="button button-quiet button-wide" id="service-open" type="button" disabled>サービス内容を見る</button>
+          <p class="hint">Cloud Driveは専用画面でユーザー名・パスワードを入力します</p>
+        </div>
+      </nav>
+
+      <div class="sns-main">
+        <section class="profile-strip" id="profile"></section>
+        <div class="revoked-banner hidden" id="revoked-banner" role="alert">
+          <strong>セッションが失効しました。</strong> 再度ログインしてください。
+        </div>
+        <section class="feed-section" id="timeline">
+          <div class="section-heading"><h2>タイムライン</h2><span>新着</span></div>
+          <div id="timeline-items"></div>
+        </section>
+        <div class="private-grid">
+          <section class="private-section" id="messages">
+            <div class="section-heading"><h2>ダイレクトメッセージ</h2><span class="private-label">本人のみ</span></div>
+            <div id="message-items"></div>
+          </section>
+          <section class="private-section" id="drafts">
+            <div class="section-heading"><h2>非公開下書き</h2><span class="private-label">非公開</span></div>
+            <ul class="plain-list" id="draft-items"></ul>
+          </section>
+        </div>
+        <section class="saved-row" id="saved"><strong>保存済み</strong><span id="saved-item"></span></section>
+      </div>
+    </section>
+  </main>
+
+  <dialog id="cookie-dialog" class="cookie-dialog">
+    <form method="dialog" class="dialog-head"><h2>ブラウザのCookie</h2><button class="icon-button" aria-label="閉じる">×</button></form>
+    <p>このブラウザに保存されている、Campus SNSのログイン状態に関するCookieです。発表時は、ここから値をコピーして攻撃者画面に貼り付けます。</p>
+    <div id="victim-cookie-list" class="cookie-list"></div>
+    <form method="dialog"><button class="button button-quiet button-wide">閉じる</button></form>
+  </dialog>
+
+  <dialog id="service-dialog" class="service-dialog">
+    <form method="dialog" class="dialog-head"><h2>ログイン中のサービス</h2><button class="icon-button" aria-label="閉じる">×</button></form>
+    <div class="service-preview-grid">
+      <section>
+        <p class="service-kicker">CLOUD DRIVE</p><h3>研究資料 /</h3>
+        <ul class="file-list"><li>中間発表資料.pdf</li><li>実験結果.csv</li><li>研究メモ.docx</li></ul>
+      </section>
+      <section>
+        <p class="service-kicker">ONLINE STORE</p><h3>最近の注文</h3>
+        <p><strong>ワイヤレスイヤホン</strong><br><span class="muted">配送済み</span></p>
+        <p class="address"><small>配送先</small><br>東京都 デモ用住所 1-2-3</p>
+      </section>
+      <section>
+        <p class="service-kicker">STUDENT PORTAL</p><h3>学生メニュー</h3>
+        <dl><div><dt>次の授業</dt><dd>情報セキュリティ</dd></div><div><dt>研究室</dt><dd>ネットワーク研究室</dd></div><div><dt>提出物</dt><dd>進捗報告書</dd></div></dl>
+      </section>
+    </div>
+    <form method="dialog"><button class="button button-quiet button-wide">Campus SNSへ戻る</button></form>
+  </dialog>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <div hidden><a href="/demo/user">利用者</a><a href="/demo/attacker">攻撃者</a><a href="/demo/evaluation">実験の記録を見る</a></div>
+  <script src="/demo/assets/demo.js" defer></script>
+</body>
+</html>

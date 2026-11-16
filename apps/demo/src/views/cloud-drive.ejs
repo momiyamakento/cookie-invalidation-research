@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="demo-token" content="<%= csrfToken %>"><title>Cloud Drive</title>
+  <link rel="stylesheet" href="/demo/assets/demo.css"><link rel="stylesheet" href="/demo/assets/cloud-drive.css">
+</head>
+<body class="drive-page">
+  <header class="site-header"><a class="brand" href="/cloud-drive"><span class="brand-mark">D</span> Cloud Drive</a><div class="drive-header-right"><span class="drive-secure">● プライベートワークスペース</span><a class="button button-quiet" href="/victim">Campus SNSへ</a></div></header>
+  <p id="drive-status" class="drive-status" role="status">ログイン状態を確認中…</p>
+  <p id="drive-error" class="form-error" role="alert"></p>
+  <main>
+    <section id="drive-login" class="drive-signin hidden">
+      <div class="drive-intro"><p class="eyebrow">YOUR IDEAS, ALL TOGETHER</p><h1>ひらめきも、成果も。<br>ひとつの場所に。</h1><p>研究の記録から、大切な発表資料まで。<br>Cloud Driveで、毎日の学びを整理しましょう。</p><div class="intro-folders"><span>▰<small>Research</small></span><span>▰<small>Documents</small></span><span>▰<small>Ideas</small></span></div><p class="intro-foot">あなたの研究を支える、プライベートな保存場所。</p></div>
+      <div class="login-panel"><p class="eyebrow">WELCOME BACK</p><h2>Cloud Driveにログイン</h2><p class="muted">ワークスペースを開きましょう。</p><form id="drive-form"><label>ユーザー名<input name="username" autocomplete="username" maxlength="128" placeholder="お好きな名前" required></label><label>パスワード<input name="password" type="password" autocomplete="current-password" maxlength="1024" placeholder="お好きなパスワード" required></label><button class="button button-primary button-wide" type="submit">ログイン →</button></form><p class="local-note">発表用デモです。任意のユーザー名とパスワードでログインできます。</p></div>
+    </section>
+    <section id="drive-content" class="drive-workspace hidden">
+      <aside class="drive-sidebar"><p class="eyebrow">WORKSPACE</p><div class="drive-nav selected">▦　マイドライブ</div><div class="drive-nav">◷　最近使ったファイル</div><div class="drive-nav">☆　スター付き</div><div class="drive-nav">♧　共有アイテム</div><div class="drive-nav">▤　ゴミ箱</div><div class="drive-storage"><strong>ストレージ</strong><div class="storage-meter"><span></span></div><p>2.4 GB / 15 GB 使用中</p><small>Personal plan</small></div></aside>
+      <div class="drive-main"><div class="drive-heading"><div><p class="eyebrow">MY DRIVE</p><h1><span id="drive-username"></span>さんのドライブ</h1><p class="muted">今日も、アイデアを少しずつ形に。</p></div><span class="drive-avatar" id="drive-avatar">D</span></div>
+        <div class="drive-welcome"><div><span class="welcome-label">YOUR NEXT MILESTONE</span><h2>発表の準備を、ここから。</h2><p>資料、実験データ、研究メモ。必要なものをひとまとめに。</p><span class="welcome-chip">研究プロジェクト / 2026</span></div><div class="welcome-art" aria-hidden="true">▤<span>✓</span></div></div>
+        <div class="drive-section-title"><h2>フォルダー</h2><span>3 folders</span></div><div class="drive-folders"><article><span class="folder-icon blue">▰</span><h3>卒業研究</h3><p>実験データ・参考文献</p><small>12 ファイル</small></article><article><span class="folder-icon amber">▰</span><h3>発表資料</h3><p>スライド・配布資料</p><small>5 ファイル</small></article><article><span class="folder-icon violet">▰</span><h3>授業ノート</h3><p>講義メモ・課題</p><small>8 ファイル</small></article></div>
+        <div class="drive-section-title"><h2>最近使ったファイル</h2><span>最終更新順</span></div><div class="drive-table-wrap"><table class="drive-table"><thead><tr><th>ファイル名</th><th>所有者</th><th>更新日</th><th>サイズ</th><th></th></tr></thead><tbody id="drive-files"></tbody></table></div><p class="drive-footnote">表示用のサンプル資料です。</p>
+      </div>
+    </section>
+  </main><script src="/demo/assets/cloud-drive.js" defer></script>
+</body></html>

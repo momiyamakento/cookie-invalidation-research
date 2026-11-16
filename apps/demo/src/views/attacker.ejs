@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="demo-token" content="<%= csrfToken %>">
+  <title>Cookie Theft Demo</title>
+  <link rel="stylesheet" href="/demo/assets/demo.css">
+</head>
+<body data-role="attacker" data-screen="attacker">
+  <header class="tool-header">
+    <div><p class="eyebrow">攻撃者のブラウザ</p><h1>Cookieを使った不正アクセス</h1></div>
+    <span class="safety-note">研究デモ：Cookie窃取をローカル環境内で再現しています</span>
+  </header>
+
+  <main class="attacker-layout">
+    <section class="tool-panel theft-panel">
+      <div class="panel-title"><div><span class="step-number">1</span><h2>Cookieを取得</h2></div><span class="target">Target Browser&nbsp;&nbsp;<strong>Campus SNS</strong></span></div>
+      <div class="transfer-flow" id="transfer-flow" aria-label="Cookie窃取の流れ">
+        <span>利用者ブラウザ</span><i>→</i><span>Cookie</span><i>→</i><span>Malware</span><i>→</i><span>攻撃者</span>
+      </div>
+      <p class="empty-state" id="stolen-empty">Cookieはまだ取得されていません。</p>
+      <div class="cookie-list hidden" id="stolen-cookie-list"></div>
+      <button class="button button-danger" id="steal-cookie" type="button">Cookieを窃取</button>
+      <p class="form-error" id="steal-error" role="alert"></p>
+    </section>
+
+    <section class="tool-panel access-panel">
+      <div class="panel-title"><div><span class="step-number">2</span><h2>Cookieを使ってアクセス</h2></div></div>
+      <form id="cookie-access-form">
+        <label>Cookie value<input id="cookie-input" autocomplete="off" spellcheck="false" placeholder="コピーしたCookie値を貼り付け" maxlength="2048" required></label>
+        <button class="button button-danger" type="submit">Cookieでアクセス</button>
+      </form>
+      <p class="hint">値は自動入力されません。上のコピー操作から手動で貼り付けてください。</p>
+      <a class="direct-session-link hidden" id="direct-session-link" href="/demo/proxy/site-a/protected">この攻撃者ブラウザで保護ページを開く</a>
+      <p class="form-error" id="access-error" role="alert"></p>
+      <div class="access-result hidden" id="access-result" aria-live="polite"></div>
+    </section>
+
+    <section class="tool-panel status-panel hidden" id="detection-panel">
+      <div class="panel-title"><div><span class="step-number">3</span><h2>検知と一括失効</h2></div></div>
+      <ol class="process-list" id="process-list">
+        <li data-key="decoy"><span>囮Cookie使用</span><b>待機</b></li>
+        <li data-key="notify"><span>管理サーバへ通知</span><b>待機</b></li>
+        <li data-key="identify"><span>利用者を特定</span><b>待機</b></li>
+        <li data-key="services"><span>利用サービスを取得</span><b>待機</b></li>
+        <li data-key="request"><span>各サービスへ失効要求</span><b>待機</b></li>
+        <li data-key="complete"><span>失効完了</span><b>待機</b></li>
+      </ol>
+      <ul class="service-list attacker-services" id="attacker-services"></ul>
+    </section>
+
+    <section class="compromised-view hidden" id="compromised-view">
+      <div class="cookie-warning"><strong>本人のアカウントに入れてしまいました</strong><span>パスワード認証を行わず、Cookieのみでアクセスしています</span></div>
+      <div class="stolen-site-bar"><strong><span class="brand-mark">C</span> Campus SNS</strong><span>攻撃者から見えている画面</span></div>
+      <div class="compromised-head">
+        <div class="avatar" id="compromised-avatar"></div>
+        <div class="compromised-identity"><p class="eyebrow">CAMPUS SNS</p><h2 id="compromised-name"></h2><p id="compromised-meta"></p><p class="bio" id="compromised-bio"></p></div>
+        <span>本人用画面</span>
+      </div>
+      <section class="compromised-feed"><div id="compromised-timeline" class="mini-timeline"></div></section>
+      <div class="private-grid">
+        <section><h3>ダイレクトメッセージ</h3><div id="compromised-messages"></div></section>
+        <section><h3>非公開下書き</h3><ul class="plain-list" id="compromised-drafts"></ul></section>
+      </div>
+      <p class="saved-row"><strong>保存済み</strong><span id="compromised-saved"></span></p>
+    </section>
+  </main>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <script src="/demo/assets/demo.js" defer></script>
+</body>
+</html>
