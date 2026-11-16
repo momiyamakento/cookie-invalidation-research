@@ -20,6 +20,7 @@
     "evaluate:zero-delay": "tsx evaluation/src/zero-delay-cli.ts",
     "evaluate:compare": "tsx evaluation/src/comparative-cli.ts",
     "evaluate:protection": "tsx evaluation/src/protection-cli.ts",
+    "evaluate:management-security": "tsx evaluation/src/management-security-runner.ts",
     "evaluate:concurrent": "tsx evaluation/src/concurrent-cli.ts",
     "evaluate:coordination": "tsx evaluation/src/coordination-cli.ts",
     "start:management": "npm run start --workspace @cookie-research/management-server",
