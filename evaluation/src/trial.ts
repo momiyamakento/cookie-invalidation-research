@@ -218,6 +218,7 @@ async function invalidationSnapshot(
 ): Promise<InvalidationSnapshot> {
   const response = await fetchChecked(
     `${environment.managementBaseUrl}/api/v1/detections/${eventId}/invalidation-jobs`,
+    { headers: { Authorization: `Bearer ${environment.managementMetricsToken}` } },
   );
   const body: unknown = await response.json();
   if (typeof body !== "object" || body === null) {

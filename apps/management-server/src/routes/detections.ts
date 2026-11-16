@@ -164,8 +164,21 @@ export function createDetectionsRouter(
       response.status(400).json({ error: "INVALID_EVENT_ID" });
       return;
     }
-    if (detectionService.findByEventId(eventId) === undefined) {
+    const event = detectionService.findByEventId(eventId);
+    const authenticatedServiceId = authenticator.authenticate(
+      request.header("authorization"),
+      event?.sourceServiceId,
+    );
+    if (authenticatedServiceId === undefined) {
+      response.status(401).json({ error: "UNAUTHORIZED" });
+      return;
+    }
+    if (event === undefined) {
       response.status(404).json({ error: "DETECTION_EVENT_NOT_FOUND" });
+      return;
+    }
+    if (authenticatedServiceId !== event.sourceServiceId) {
+      response.status(403).json({ error: "SOURCE_SERVICE_MISMATCH" });
       return;
     }
     response.json(
@@ -182,8 +195,20 @@ export function createDetectionsRouter(
       return;
     }
     const event = detectionService.findByEventId(eventId);
+    const authenticatedServiceId = authenticator.authenticate(
+      request.header("authorization"),
+      event?.sourceServiceId,
+    );
+    if (authenticatedServiceId === undefined) {
+      response.status(401).json({ error: "UNAUTHORIZED" });
+      return;
+    }
     if (event === undefined) {
       response.status(404).json({ error: "DETECTION_EVENT_NOT_FOUND" });
+      return;
+    }
+    if (authenticatedServiceId !== event.sourceServiceId) {
+      response.status(403).json({ error: "SOURCE_SERVICE_MISMATCH" });
       return;
     }
     response.json(

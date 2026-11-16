@@ -240,7 +240,9 @@ describe("Phase 7 authenticated detection notification", () => {
 
   it("Test 14: persists and exposes the resolved detection event", async () => {
     await postDetection();
-    const response = await request(app).get(`/api/v1/detections/${EVENT_ID}`);
+    const response = await request(app)
+      .get(`/api/v1/detections/${EVENT_ID}`)
+      .set("Authorization", authorization("site-a"));
     expect(responseBody(response)).toMatchObject({
       eventId: EVENT_ID,
       sourceServiceId: "site-a",
@@ -259,6 +261,20 @@ describe("Phase 7 authenticated detection notification", () => {
       )
       .get("detection_events")?.sql.toLowerCase();
     expect(sql).not.toMatch(/cookie|token|hash|password/u);
+  });
+
+  it("rejects an unauthenticated detection result read", async () => {
+    await postDetection();
+    await request(app).get(`/api/v1/detections/${EVENT_ID}`).expect(401);
+  });
+
+  it("rejects another service reading a detection result", async () => {
+    await postDetection();
+    const response = await request(app)
+      .get(`/api/v1/detections/${EVENT_ID}`)
+      .set("Authorization", authorization("site-b"));
+    expect(response.status).toBe(403);
+    expect(responseBody(response).error).toBe("SOURCE_SERVICE_MISMATCH");
   });
 
   it("Test 16: duplicate eventId does not add a row", async () => {
